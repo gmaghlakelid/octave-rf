@@ -1,0 +1,15 @@
+# Phase V validation artifacts
+#
+# Binary .mat files are regenerated every time run_matlab.m or run_octave.m
+# runs — no reason to check them in.
+*_results.mat
+matlab_results_*.mat
+octave_results_*.mat
+
+# Any scratch files from experimental runs
+*.mat~
+*.log
+.DS_Store
+
+# Note: reports/*.md ARE committed (dated Markdown reports from successful
+# validation runs — see README.md "Artifact policy").
