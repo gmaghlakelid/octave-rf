@@ -1,153 +1,122 @@
 # octave-rf Publication Checklist
 
-Step-by-step guide to publish `octave-rf` as a registered GNU Octave package
-and promote it to the community.
+Step-by-step guide to publish `octave-rf` as a registered GNU Octave package.
 
-**Status legend**: ⬜ TODO  ✅ DONE  ⚠️ BLOCKED
-
----
-
-## Phase A — Textbook Reference Verification ✅ COMPLETE (2026-04-15)
-
-All Pozar, Pupalaikis, and Hall & Heck citations in `doc/REFERENCES.md` and in every
-`.m` file have been verified against the physical books.  Several corrections were
-identified and applied.
-
-**Books used**:
-- Pozar, D.M., *Microwave Engineering*, 4th ed., Wiley, 2012. ISBN 978-0-470-63155-3.
-- Pupalaikis, P.J., *S-Parameters for Signal Integrity*, Cambridge, 2020. ISBN 978-1-108-48996-6.
-- Hall, S.H. and Heck, H.L., *Advanced Signal Integrity for High-Speed Digital Designs*,
-  Wiley-IEEE Press, 2009. ISBN 978-0-470-19235-1.
-
-### Verification Results
-
-| ✅ | Function(s) | Finding / Correction |
-|----|-------------|----------------------|
-| ✅ | `s2t` / `t2s` | Pozar Eq. 4.54–4.55 are reference plane shifts, **NOT T-parameters**. Pozar does not cover chain scattering T-parameters. Removed Pozar citation. Primary: [PUP] §3.6 Eq. 3.31–3.34 (p.68). Secondary: [H&H] §9.2.4 (p.390). |
-| ✅ | `s2z` / `z2s` | [POZ] §4.3 Eq. 4.44–4.45 (p.181), Table 4.2 (p.192) confirmed. [PUP] §3.4.1–3.4.2 Tables 3.2–3.3 (p.55–56) matches. [H&H] §9.2.1 (p.355). |
-| ✅ | `s2y` / `y2s` | [POZ] §4.2 Eq. 4.26–4.27 (p.175), Table 4.2 (p.192). [PUP] §3.4.3–3.4.4 Tables 3.4–3.5 (p.57, 59). |
-| ✅ | `s2abcd` / `abcd2s` | [POZ] §4.4 Eq. 4.69 (p.189), Table 4.2 (p.192). [PUP] §3.4.5–3.4.6 Tables 3.6–3.7 Eq. 3.20 (p.60–61). [H&H] §9.2.3 (p.382). |
-| ✅ | `s2h` / `h2s` / `s2g` / `g2s` | **Pozar Table 4.2 (p.192) does NOT include H or G parameters**. Removed the misleading "§4.4 Table 4.2" citation. Primary reference is [PUP] Ch. 1 §1.2 (p.16). |
-| ✅ | `renormsparams` | [POZ] §4.3 Eq. 4.44–4.45 (p.181) confirmed. [PUP] Ch. 5 §5.1 (p.134) is the primary. [H&H] §9.2.6 (p.399). |
-| ✅ | `cascadesparams` | Pozar §4.4 Eq. 4.71 (p.189) covers **ABCD cascade** (analogous to T-matrix cascade — Pozar doesn't present T-matrix cascade explicitly). Primary: [PUP] §3.7 Eq. 3.35 (p.69). |
-| ✅ | Mixed-mode (4 fns) | **Chapter numbers were WRONG**. Was "Ch. 8" → now [PUP] **Ch. 7 §7.3.2**, Eq. 7.24–7.27 (p.197–199). H&H was "Ch. 8" → now [H&H] **Ch. 7** (p.297) + **§9.2.7** (p.400). |
-| ✅ | `deembedsparams` / `embedsparams` | [PUP] §3.8–3.9 (p.69–70), Ch. 10 (p.282). [H&H] §9.2.4–9.2.5 (p.390, 395). |
-
-### Actions Completed
-1. ✅ Removed all `[VERIFY WITH BOOK]` / `[VERIFY EQUATION NUMBERS WITH BOOK]` tags from all 24 .m files
-2. ✅ Removed all `†` markers and `[VERIFY]` notes from `doc/REFERENCES.md`
-3. ✅ Removed `[VERIFY — not yet confirmed]` from the [POZ] table entry in REFERENCES.md
-4. ✅ Added specific page numbers and equation numbers to every citation
-5. ✅ Corrected the wrong Pozar T-parameter citation
-6. ✅ Corrected the wrong Pupalaikis mixed-mode chapter (Ch. 8 → Ch. 7)
-7. ✅ Corrected the wrong Hall & Heck mixed-mode chapter (Ch. 8 → Ch. 7 + §9.2.7)
-8. ✅ Noted explicitly that Pozar Table 4.2 does not cover H/G parameters
+**Status legend**: ⬜ TODO  ✅ DONE  ⚠️ BLOCKED / needs attention
 
 ---
 
-## Phase B — GitHub Repository Creation
+## Phase A — Textbook Reference Verification ✅ DONE (2026-04-15)
 
-### B1 — Create the repo
+Verified every formula in all 26 .m files against physical books (Pozar,
+Pupalaikis, Hall & Heck).  Added exact page + equation numbers to every
+citation.  Caught and corrected several wrong references:
 
-1. Go to https://github.com/new (create under the `Sparamix` account)
-2. Repository name: `octave-rf`
-3. Description: `RF and microwave network parameter utilities for GNU Octave — enables IEEE P370 de-embedding code to run independently in Octave while remaining compatible with MATLAB RF Toolbox syntax`
-4. Visibility: **Public**
-5. License: **BSD 3-Clause**
-6. Do NOT initialize with README (you'll push existing code)
-7. Click "Create repository"
+- Pozar Eq. 4.54-4.55 cited for T-parameters → actually reference plane
+  shifts (removed)
+- Pupalaikis mixed-mode cited as Ch. 8 → actually Ch. 7 §7.3 (fixed)
+- Hall & Heck mixed-mode cited as Ch. 8 → actually Ch. 7 + §9.2.7 (fixed)
+- Pozar Table 4.2 cited for H/G parameters → table doesn't include them
+  (clarified)
 
-### B2 — Extract the subfolder and push
-
-Run these commands from the `sparamix-py370/` directory:
-
-```bash
-# Extract octave-rf/ into a standalone repo
-# Method: git subtree split (preserves history from this branch)
-
-cd D:/Claude_work/sparamix_py370
-
-# Create a branch containing only the octave-rf/ subtree
-git subtree split --prefix=octave-rf -b octave-rf-standalone
-
-# Create a new local repo from that branch
-mkdir D:/Claude_work/octave-rf-repo
-cd D:/Claude_work/octave-rf-repo
-git init
-git pull D:/Claude_work/sparamix_py370 octave-rf-standalone
-
-# Add the GitHub remote and push
-git remote add origin https://github.com/Sparamix/octave-rf.git
-git branch -M main
-git push -u origin main
-```
-
-### B3 — Add .gitignore and CI
-
-In the new `octave-rf-repo/`:
-
-```bash
-# Create .gitignore
-cat > .gitignore << 'EOF'
-*.oct
-*.o
-*.a
-fntests.log
-octaverc
-*.tar.gz
-EOF
-git add .gitignore
-git commit -m "chore: add .gitignore"
-git push
-```
-
-### B4 — Set up GitHub Actions CI
-
-Create `.github/workflows/test.yml`:
-
-```yaml
-name: Octave Tests
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        octave: ['8.4.0', '9.2.0', '10.1.0']
-    steps:
-      - uses: actions/checkout@v4
-      - uses: matlab-actions/setup-octave@v1
-        with:
-          octave-version: ${{ matrix.octave }}
-      - name: Run BIST tests
-        run: |
-          octave --no-gui -q --eval "
-            pkg install $(pwd)
-            pkg load rf
-            pkg test rf
-          "
-```
-
-```bash
-git add .github/
-git commit -m "ci: add GitHub Actions Octave test matrix"
-git push
-```
+**Artifacts**: `doc/REFERENCES.md` (verified citations), all `inst/*.m` files
+updated.
 
 ---
 
-## Phase C — Release Tarball
+## Phase A.1 — Test Hardening ✅ DONE (2026-04-15)
+
+Fixed the `s2z.m` BIST tests that produced "matrix singular to machine
+precision" warnings.  Root cause: unseeded `rand()` and an ideal-thru test
+case with formally undefined Z-parameters.
+
+**Result**: 85 → 100 BIST tests, zero warnings across all files.
+
+**Deferred** (recommended before formal release):
+- Deterministic seeding for all rand-using tests (~20 files)
+- `%!error` coverage for all input-validation paths
+- Tighter tolerances where safe
+- Cross-function consistency tests
+
+---
+
+## Phase V — MATLAB + scikit-rf Validation ✅ DONE (2026-04-16/17)
+
+### V.1 — Validation infrastructure ✅
+
+Created `validation/` with 3 generators + 1 comparator:
+- `run_matlab.m` — MATLAB R2025b RF Toolbox (25.2)
+- `run_octave.m` — octave-rf on Octave 11.1.0
+- `run_python.py` — scikit-rf 1.11.0 + NumPy 2.4.3
+- `compare_results.m` — portable, diffs all pairs, writes dated reports
+
+### V.2 — Convention fix discovered by validation ✅
+
+The validation caught a T-parameter element-ordering mismatch between
+octave-rf and MATLAB.  Root cause: octave-rf originally used Pupalaikis
+Convention A (T11 = -det(S)/S21); MATLAB uses the other ordering
+(T11 = 1/S21).  Both are mathematically equivalent (rot180 relationship),
+but the difference broke direct compatibility.
+
+**Fix**: changed `s2t.m` and `t2s.m` to use the MATLAB-compatible ordering.
+`cascadesparams`/`deembedsparams`/`embedsparams` needed no changes (rot180
+distributes over matrix multiplication).
+
+### V.3 — Three-way results ✅
+
+| Pair | Tests | Status |
+|---|---|---|
+| MATLAB R2025b vs octave-rf | 36/36 | PASS |
+| scikit-rf 1.11.0 vs octave-rf | 36/36 | PASS |
+| MATLAB R2025b vs scikit-rf | 36/36 | PASS |
+| **Total** | **108/108** | **0 FAIL** |
+
+**Artifacts**: `doc/VALIDATION_REPORT_MATLAB_R2025b.md`,
+`doc/VALIDATION_REPORT_3WAY.md`, `validation/reports/`.
+
+---
+
+## Phase M — MATLAB Compatibility Fixes ✅ DONE (2026-04-16/17)
+
+Closed all fixable API gaps found during validation:
+
+| Fix | Description |
+|---|---|
+| `s2t`/`t2s` element ordering | Switched to MATLAB-compatible Pupalaikis convention |
+| `snp2smp` 4-arg form | Now accepts `snp2smp(S, z0, order, z0_term)` |
+| `s2smm` default portorder | portorder optional (default [1 2 3 4]); supports `[Sdd,Sdc,Scd,Scc] = s2smm(S)` 4-output form |
+| `s2sdd`/`s2scc` default portorder | portorder optional (default [1 2 3 4]) |
+| `smm2s` default portorder | portorder optional (default [1 2 3 4]) |
+| `sparameters` fields | Added `.Impedance` and `.NumPorts` (matching MATLAB) |
+| `sparameters(filename)` | Reads Touchstone files via bundled `fromtouchn` |
+| `round(x, n)` shim | Extends Octave's `round` with MATLAB's 2-arg syntax (needed by IEEE P370 TG3 code) |
+
+**Artifacts**: `doc/MATLAB_COMPATIBILITY_GUIDE.md`, updated `inst/*.m` files.
+
+---
+
+## Phase B — GitHub Repository ✅ DONE (2026-04-16)
+
+- ✅ B1: Repo created at https://github.com/Sparamix/octave-rf (public, BSD-3)
+- ✅ B2: Code pushed (extracted from sparamix_py370 feat/tg1-deembed subtree,
+  then developed independently in the standalone repo)
+- ✅ B3: `.gitignore` added
+- ✅ B4: GitHub Actions CI (`apt-get install octave` + BIST run on every push)
+- ✅ B5: `workflow_dispatch` added for manual CI trigger
+- ✅ README.md: concise, with function table, quick example, doc links,
+  AI-assisted development disclosure
+
+---
+
+## Phase C — Release Tarball ⬜ TODO
 
 ### C1 — Build the tarball
 
 ```bash
-cd D:/Claude_work/octave-rf-repo
-
-# The tarball must contain a top-level directory named rf-0.1.0/
-# pkg install expects: rf-0.1.0.tar.gz containing rf-0.1.0/DESCRIPTION etc.
-
-cd ..
-cp -r octave-rf-repo rf-0.1.0
+cd D:/Claude_work
+cp -r octave-rf rf-0.1.0
+# Remove non-package files
+rm -rf rf-0.1.0/.git rf-0.1.0/.github rf-0.1.0/validation
 tar -czf rf-0.1.0.tar.gz rf-0.1.0/
 rm -rf rf-0.1.0
 ```
@@ -155,212 +124,80 @@ rm -rf rf-0.1.0
 ### C2 — Test the tarball locally
 
 ```octave
-% In Octave:
 pkg install D:/Claude_work/rf-0.1.0.tar.gz
 pkg load rf
 pkg test rf
-% Expected: PASS 81/81, FAIL 0
+% Expected: 100/100 PASS, 0 FAIL
 ```
 
 ### C3 — Compute SHA256
 
 ```bash
-# Windows (PowerShell):
-Get-FileHash rf-0.1.0.tar.gz -Algorithm SHA256
-
-# Linux/macOS:
-sha256sum rf-0.1.0.tar.gz
+sha256sum rf-0.1.0.tar.gz    # Linux/macOS
+Get-FileHash rf-0.1.0.tar.gz  # Windows PowerShell
 ```
-
-Save the output — you'll need it for the `rf.yaml` package index file.
 
 ### C4 — Create GitHub Release
 
 1. Go to https://github.com/Sparamix/octave-rf/releases/new
-2. Tag: `v0.1.0` (create new tag on main)
-3. Release title: `rf 0.1.0 — Initial release`
-4. Description (copy-paste):
-
-```
-## rf 0.1.0 — S-parameter utilities for GNU Octave
-
-Provides the S-parameter utility functions needed to run IEEE P370 de-embedding
-code independently in Octave while remaining compatible with MATLAB RF Toolbox
-syntax.
-
-### Install
-```octave
-pkg install https://github.com/Sparamix/octave-rf/releases/download/v0.1.0/rf-0.1.0.tar.gz
-pkg load rf
-```
-
-### What's included
-- 24 functions: S↔T, S↔Z, S↔Y, S↔ABCD, S↔H, S↔G, cascade, de-embed, embed,
-  renormalize, port reorder, mixed-mode (Sdd/Scc), sparameters object
-- 81 built-in self-tests, all passing
-- Example S-parameter files + runnable demo scripts
-- Full cross-validation against scikit-rf and Python reference to machine epsilon
-
-### IEEE P370 compatibility
-With this package installed, the `IEEEP3702xThru_Octave.m` NZC algorithm runs
-unmodified in Octave using only `pkg load rf`.
-```
-
-5. Attach the `rf-0.1.0.tar.gz` file as a release asset
-6. Click "Publish release"
+2. Tag: `v0.1.0`
+3. Title: `rf 0.1.0`
+4. Attach `rf-0.1.0.tar.gz`
+5. Publish
 
 ---
 
-## Phase D — Register with GNU Octave Package Index
+## Phase D — Register with GNU Octave Package Index ⬜ TODO
 
-The package index lives at https://github.com/gnu-octave/packages
-
-### D1 — Fork the packages repo
-
-1. Go to https://github.com/gnu-octave/packages
-2. Click "Fork" → fork to your personal GitHub account
-
-### D2 — Create rf.yaml
-
-In your fork, create `package/rf.yaml`:
-
-```yaml
----
-description: >-
-  RF and microwave network parameter utilities.
-  S-parameter conversions (S↔T, S↔Z, S↔Y, S↔ABCD, S↔H, S↔G),
-  de-embedding, cascading, port reordering, renormalization, and
-  mixed-mode conversion for differential pairs.
-  Enables IEEE P370 de-embedding code to run independently in GNU
-  Octave while remaining compatible with MATLAB RF Toolbox syntax.
-homepage: 'https://github.com/Sparamix/octave-rf'
-icon: 'https://raw.githubusercontent.com/Sparamix/octave-rf/main/doc/icon.png'
-maintainer:
-  - 'Giorgi Maghlakelidze <giorgi.snp@pm.me>'
-name: rf
-versions:
-  - id: 'v0.1.0'
-    date: '2026-03-28'
-    sha256: '<paste SHA256 from Step C3>'
-    url: 'https://github.com/Sparamix/octave-rf/releases/download/v0.1.0/rf-0.1.0.tar.gz'
-    depends:
-      - pkg: 'octave'
-        min: '6.0.0'
-```
-
-### D3 — Create a package icon (optional but recommended)
-
-Create a simple 128×128 PNG icon and save to `doc/icon.png` in your octave-rf repo.
-Push it before creating the PR (the packages index needs the icon URL to be live).
-
-### D4 — Test with packages-sandbox
-
-The packages repo has a sandbox tester. In your fork:
-
-```bash
-git clone https://github.com/YOUR_USERNAME/packages.git
-cd packages
-# Install the sandbox tool (see packages repo README)
-python3 packages.py build rf
-```
-
-Fix any errors before submitting the PR.
-
-### D5 — Submit the PR
-
-1. Push your `package/rf.yaml` to your fork
-2. Open a Pull Request to `gnu-octave/packages` main branch
-3. PR title: `Add rf package — RF/microwave network parameter utilities`
-4. PR description:
-
-```
-Adds the `rf` package providing S-parameter conversions and network operations
-for RF and microwave engineering.
-
-Enables IEEE P370 de-embedding code to run independently in GNU Octave while
-remaining compatible with MATLAB RF Toolbox syntax.
-
-- 24 functions, 81 BIST tests, 0 failures
-- Tested on Octave 8, 9, 10, 11
-- Full validation report: https://github.com/Sparamix/octave-rf/blob/main/doc/VALIDATION_REPORT.md
-- License: BSD-3-Clause
-```
+1. Fork https://github.com/gnu-octave/packages
+2. Create `packages/rf.yaml` with SHA256 from C3
+3. Test with sandbox
+4. Submit PR
 
 ---
 
-## Phase E — Promotion
+## Phase E — Community Promotion ⬜ TODO
 
-### E1 — Octave community
-
-- [ ] Post to **Octave Discourse** (https://octave.discourse.group/)
-  - Category: "Packages"
-  - Title: "New package: `rf` — RF/microwave network parameters for Octave"
-  - Include: what it does, how to install, link to GitHub, mention IEEE P370 use case
-
-- [ ] Post to **Octave mailing list** (help@octave.org)
-  - Announce new package, brief description, installation command
-
-### E2 — Signal integrity community
-
-- [ ] Post to **SI-List** (si-list@freelists.org)
-  - Announce that IEEE P370 de-embedding now runs independently in Octave
-  - Include installation command, link to GitHub and examples
-
-- [ ] Post to **Signal Integrity Academy** forums (if applicable)
-
-- [ ] Post to **DesignCon / EPEPS LinkedIn groups**
-
-### E3 — Open-source/RF communities
-
-- [ ] Reddit: **r/rfelectronics**, **r/signalprocessing**, **r/electronics**
-  - Short post linking to GitHub + key one-liner: "first RF package for Octave"
-
-- [ ] **Hackaday.io** project page (optional)
-
-### E4 — Academic channels (when paper is submitted)
-
-- [ ] Reference the package in the IEEE EPEPS 2026 paper abstract
-- [ ] Reference the package in the IEEE EMC+SIPI 2026 paper
-- [ ] After acceptance, add DOI to README and package description
+- [ ] Octave Discourse (https://octave.discourse.group/)
+- [ ] SI-List (si-list@freelists.org)
+- [ ] Reddit: r/rfelectronics, r/signalprocessing
+- [ ] DesignCon / EPEPS LinkedIn groups
+- [ ] Reference in IEEE paper when submitted
 
 ---
 
-## Phase F — Upstream Bug Fix PR (IEEE P370)
+## Phase F — Upstream IEEE P370 Bug Fix PR ⬜ TODO
 
-See `upstream-contributions/PR1-bugfixes/README.md` for full details.
+7 bugs found in IEEE P370 Octave code (U-001 through U-007).
+See `sparamix_py370/octave-rf/upstream-contributions/PR1-bugfixes/`.
 
-- [ ] Create a GitLab account on https://opensource.ieee.org (if not already done)
-- [ ] Fork the IEEE P370 repo: https://opensource.ieee.org/elec-char/ieee-370/
-- [ ] Create branch `fix/octave-compatibility-bugs`
-- [ ] Copy the 5 patched files from `upstream-contributions/PR1-bugfixes/files/` to the fork:
-  - `TG1/IEEEP3702xThru_Octave.m`
-  - `TG1/IEEEP370Zc2xThru_Octave.m`
-  - `TG3/qualityCheckFrequencyDomain.m`
-  - `TG3/qualityCheck.m`
-  - `TG3/extrapolateMatrix.m`
-- [ ] Open Merge Request using the title and description from `PR1-bugfixes/README.md`
-- [ ] Monitor for reviewer feedback
+- [ ] Create GitLab account on https://opensource.ieee.org
+- [ ] Fork IEEE P370 repo, submit merge request with 5 patched files
 
 ---
 
-## Phase G — Post-Publication Maintenance
+## Phase G — Post-Publication Maintenance ⬜ FUTURE
 
-- [ ] Monitor GitHub Issues; respond within 1 week
-- [ ] When Octave releases a new version, run `pkg test rf` and verify
-- [ ] For version 0.2.0, consider adding:
-  - Touchstone file reader (`readtouchstone.m`) so users don't need `fromtouchn.m`
-  - TG3 quality metric wrappers (bridge to `sparamix.py370`)
-  - Support for >4-port mixed-mode (Nport generalization)
-- [ ] Update `NEWS` file and `DESCRIPTION` version for each release
+- [ ] Monitor GitHub Issues
+- [ ] Test on new Octave releases
+- [ ] v0.2.0 roadmap: Touchstone 2.0 support, >4-port mixed-mode,
+      TG3 quality metric wrappers
+- [ ] Run validation on MATLAB R2020b (user's work laptop)
 
 ---
 
 ## Remaining Technical Items
 
-- [x] **Pozar verification** (Phase A above) — ✅ done 2026-04-15
-- [ ] **ZC E2E test** — once the U-007 upstream bug fix is accepted (or use local patched copy),
-      add a test for `IEEEP370Zc2xThru_Octave.m` in `test/test_e2e_ieee370.m`
-- [ ] **`doc/VALIDATION_REPORT.md`** — internal package summary doc (lower priority;
-      primarily for users who want to understand validation depth)
-- [ ] **GitHub release URL** — update `octave-rf/README.md` installation line once the
-      actual release exists (currently points to a URL that doesn't exist yet)
+- [x] Pozar reference verification — ✅ Phase A
+- [x] s2z BIST warning fix — ✅ Phase A.1
+- [x] MATLAB validation (R2025b) — ✅ Phase V
+- [x] scikit-rf validation — ✅ Phase V
+- [x] T-parameter convention fix — ✅ Phase V.2
+- [x] MATLAB compatibility fixes (8 items) — ✅ Phase M
+- [x] GitHub repo + CI — ✅ Phase B
+- [x] README + docs + AI disclosure — ✅ Phase B
+- [ ] Release tarball + pkg install test — ⬜ Phase C
+- [ ] gnu-octave/packages registration — ⬜ Phase D
+- [ ] MATLAB R2020b validation run — ⬜ (user's work laptop)
+- [ ] Community promotion — ⬜ Phase E
+- [ ] Upstream IEEE P370 bug fix PR — ⬜ Phase F
