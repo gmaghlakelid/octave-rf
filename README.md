@@ -19,8 +19,10 @@ function-by-function comparison and portable-code examples.
 
 ## Validation
 
-Cross-validated against MATLAB R2025b RF Toolbox — 36/36 tests pass to
-floating-point precision. See the [validation report](doc/VALIDATION_REPORT_MATLAB_R2025b.md).
+Three-way cross-validated against MATLAB R2025b RF Toolbox and scikit-rf
+1.11.0 — 108/108 pair-wise tests pass to floating-point precision.
+See the [3-way validation report](doc/VALIDATION_REPORT_3WAY.md) and the
+[MATLAB-only report](doc/VALIDATION_REPORT_MATLAB_R2025b.md).
 
 ## License
 
