@@ -1,0 +1,29 @@
+name: Octave Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        octave: ['8.4.0', '9.2.0']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: matlab-actions/setup-octave@v1
+        with:
+          octave-version: ${{ matrix.octave }}
+      - name: Run BIST tests
+        run: |
+          octave --no-gui -q --eval "
+            addpath('inst');
+            files = dir('inst/*.m');
+            total_p = 0; total_t = 0; any_fail = 0;
+            for k = 1:length(files)
+              fname = files(k).name(1:end-2);
+              [p, t] = test(fname, 'normal');
+              total_p += p; total_t += t;
+              if p < t; any_fail = 1; end
+              printf('%-20s %d/%d\n', fname, p, t);
+            end
+            printf('TOTAL: %d/%d\n', total_p, total_t);
+            if any_fail; exit(1); end
+          "

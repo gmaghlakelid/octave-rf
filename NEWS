@@ -1,40 +1,57 @@
 Summary of important user-visible changes for octave-rf:
 
-## Version 0.1.0 (2026-03-27)
+## Version 0.1.0 (2026-04-17)
 
 Initial release.
 
-### New functions
+### Functions (26 total)
 
 **S-parameter objects:**
-- `sparameters` — S-parameter struct constructor (N×N×K array + frequency vector)
+- `sparameters` — S-parameter struct constructor; supports `sparameters(filename)`
+  for Touchstone file reading (MATLAB-compatible), `sparameters(P, f)`,
+  `sparameters(P, f, z0)`, and `sparameters(obj, z0_new)` for renormalization.
+  Struct includes `.Parameters`, `.Frequencies`, `.Impedance`, `.NumPorts`.
 - `rfparam` — extract single S-parameter element by port indices
 
 **Chain scattering (T) parameters:**
-- `s2t` — convert 2-port S-parameters to T-parameters
-- `t2s` — convert T-parameters to S-parameters
+- `s2t` — S to T-parameters (MATLAB-compatible element ordering)
+- `t2s` — T to S-parameters
 
 **Network operations:**
 - `cascadesparams` — cascade two or more 2-port networks via T-matrix multiplication
 - `deembedsparams` — de-embed fixture S-parameters from a measured network
-- `embedsparams` — embed a DUT inside fixture S-parameters (inverse of deembedsparams)
+- `embedsparams` — embed a DUT inside fixture S-parameters
 
-**Parameter conversions:**
-- `s2z` / `z2s` — S ↔ impedance (Z) parameters
-- `s2y` / `y2s` — S ↔ admittance (Y) parameters
-- `s2abcd` / `abcd2s` — S ↔ ABCD (chain/transmission) parameters
-- `s2h` / `h2s` — S ↔ hybrid (H) parameters
-- `s2g` / `g2s` — S ↔ inverse hybrid (G) parameters
+**Parameter conversions (2-port and N-port):**
+- `s2z` / `z2s` — S <-> impedance (Z) parameters
+- `s2y` / `y2s` — S <-> admittance (Y) parameters
+- `s2abcd` / `abcd2s` — S <-> ABCD (chain/transmission) parameters
+- `s2h` / `h2s` — S <-> hybrid (H) parameters
+- `s2g` / `g2s` — S <-> inverse hybrid (G) parameters
 
 **Mixed-mode (differential pairs):**
 - `s2sdd` — single-ended to differential-mode S-parameters
 - `s2scc` — single-ended to common-mode S-parameters
+- `s2smm` — single-ended to full mixed-mode matrix; supports MATLAB's
+  `[Sdd,Sdc,Scd,Scc] = s2smm(S)` 4-output form
 - `smm2s` — mixed-mode to single-ended S-parameters
-- `s2smm` — single-ended to full mixed-mode S-parameter matrix
 
 **Port operations:**
-- `snp2smp` — reorder ports of an N-port S-parameter matrix
+- `snp2smp` — reorder ports; accepts both `snp2smp(S, order)` and
+  MATLAB's `snp2smp(S, z0, order, z0_term)` 4-argument form
 - `renormsparams` — renormalize S-parameters to a different reference impedance
 
-**Octave compatibility utilities:**
-- `ifft_symmetric` — Octave-compatible equivalent of MATLAB's `ifft(x, 'symmetric')`
+**I/O:**
+- `fromtouchn` — Touchstone file reader (S1P through S99P, Touchstone 1.0)
+
+**MATLAB compatibility shims:**
+- `ifft_symmetric` — equivalent of MATLAB's `ifft(x, 'symmetric')`
+- `round` — extends Octave's built-in `round` with MATLAB's `round(x, n)` syntax
+
+### Validation
+
+- 100 built-in self-tests (BIST), 0 failures
+- Cross-validated against MATLAB R2025b RF Toolbox and scikit-rf 1.11.0
+  to floating-point precision (108/108 pair-wise tests pass)
+- All textbook references verified against physical books (Pozar,
+  Pupalaikis, Hall & Heck)

@@ -1,0 +1,13 @@
+# Octave build artifacts
+*.oct
+*.o
+*.a
+fntests.log
+octaverc
+
+# Package tarballs
+*.tar.gz
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -1,3 +1,13 @@
+%% fromtouchn.m -- Touchstone file reader (S1P through S99P)
+%%
+%% Origin: Francesco de Paulis, UMR-EMC Lab (now Missouri S&T), November 2006.
+%% Distributed as part of the IEEE P370 open-source repository:
+%%   https://opensource.ieee.org/elec-char/ieee-370/
+%% Included in octave-rf with attribution to the original author.
+%%
+%% Supports Touchstone 1.0 format (RI, MA, dB; Hz/kHz/MHz/GHz).
+%% Does NOT support Touchstone 2.0 (.ts) format.
+
 function [freq,data,npts] = fromtouchn(filename)
 
 %FROMTOUCHN.
