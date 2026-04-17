@@ -48,6 +48,8 @@ function s = sparameters (varargin)
     P      = _renorm (s_in.Parameters, z0_old, z0_new);
     s.Parameters  = P;
     s.Frequencies = s_in.Frequencies(:);
+    s.Impedance   = z0_new;
+    s.NumPorts    = size (P, 1);
 
   elseif nargin == 2 && isnumeric (varargin{1})
     %% Form 1: sparameters(params, freq) — z0 = 50 assumed
@@ -61,6 +63,8 @@ function s = sparameters (varargin)
     end
     s.Parameters  = params;
     s.Frequencies = freq(:);
+    s.Impedance   = 50.0;
+    s.NumPorts    = size (params, 1);
 
   elseif nargin == 3
     %% Form 2: sparameters(params, freq, z0) — store, renorm to 50 if needed
@@ -78,6 +82,8 @@ function s = sparameters (varargin)
     end
     s.Parameters  = params;
     s.Frequencies = freq(:);
+    s.Impedance   = 50.0;
+    s.NumPorts    = size (params, 1);
 
   else
     error ('sparameters: unrecognized argument combination');
@@ -154,3 +160,29 @@ endfunction
 %! assert (size(s.Parameters, 1), 2);
 %! assert (size(s.Parameters, 2), 2);
 %! assert (size(s.Parameters, 3), 1);  %% K=1 dimension is preserved internally
+
+%!test
+%! %% MATLAB compat: .Impedance and .NumPorts fields exist
+%! f = [1e9; 2e9; 3e9];
+%! p = zeros(2,2,3);  p(1,2,:) = 1;  p(2,1,:) = 1;
+%! s = sparameters(p, f);
+%! assert (isfield(s, 'Impedance'));
+%! assert (isfield(s, 'NumPorts'));
+%! assert (s.Impedance, 50);
+%! assert (s.NumPorts, 2);
+
+%!test
+%! %% MATLAB compat: .Impedance tracks renormalization (Form 3)
+%! f = [1e9; 2e9];
+%! p = zeros(2,2,2);  p(1,2,:) = 0.9;  p(2,1,:) = 0.9;
+%! s50 = sparameters(p, f);
+%! assert (s50.Impedance, 50);
+%! s75 = sparameters(s50, 75);
+%! assert (s75.Impedance, 75);
+
+%!test
+%! %% MATLAB compat: 4-port .NumPorts = 4
+%! f = [1e9];
+%! p = 0.1*eye(4);
+%! s = sparameters(p, f);
+%! assert (s.NumPorts, 4);

@@ -11,6 +11,12 @@ Toolbox syntax.
 Do not depend on this package for production work yet. No installable tarball
 exists; there is no `pkg install` URL to point at.
 
+## MATLAB Compatibility
+
+Designed for compatibility with MATLAB RF Toolbox syntax.  See the
+[MATLAB Compatibility Guide](doc/MATLAB_COMPATIBILITY_GUIDE.md) for a
+function-by-function comparison and portable-code examples.
+
 ## Validation
 
 Cross-validated against MATLAB R2025b RF Toolbox — 36/36 tests pass to

@@ -1,5 +1,6 @@
 ## -*- texinfo -*-
-## @deftypefn {Function File} {@var{Sdd} =} s2sdd (@var{S}, @var{portorder})
+## @deftypefn  {Function File} {@var{Sdd} =} s2sdd (@var{S})
+## @deftypefnx {Function File} {@var{Sdd} =} s2sdd (@var{S}, @var{portorder})
 ## Extract the differential-mode sub-block from a 4-port single-ended S-parameter matrix.
 ##
 ## @var{S} is a 4x4xK complex array of single-ended S-parameters.
@@ -46,7 +47,8 @@
 
 function Sdd = s2sdd (S, portorder)
 
-  narginchk (2, 2);
+  narginchk (1, 2);
+  if nargin < 2;  portorder = [1 2 3 4];  end
   [~, S_mm] = _se2mm (S, portorder);
   Sdd = S_mm(1:2, 1:2, :);
 
@@ -73,6 +75,12 @@ endfunction
 %! S_mm = s2smm(S, portorder);
 %! %% Sdd should equal top-left block of S_mm
 %! assert (Sdd, S_mm(1:2,1:2,:), 1e-14);
+
+%!test
+%! %% MATLAB compat: default portorder (no 2nd arg) — same as [1 2 3 4]
+%! K = 3;
+%! S = rand(4,4,K)*0.1;  S = (S+permute(S,[2 1 3]))/2;
+%! assert (s2sdd(S), s2sdd(S, [1 2 3 4]), 1e-15);
 
 ## Internal: compute full 4x4 mixed-mode matrix and return it along with Sdd
 function [Sdd, S_mm] = _se2mm (S, portorder)

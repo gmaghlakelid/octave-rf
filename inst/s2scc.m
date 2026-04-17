@@ -1,5 +1,6 @@
 ## -*- texinfo -*-
-## @deftypefn {Function File} {@var{Scc} =} s2scc (@var{S}, @var{portorder})
+## @deftypefn  {Function File} {@var{Scc} =} s2scc (@var{S})
+## @deftypefnx {Function File} {@var{Scc} =} s2scc (@var{S}, @var{portorder})
 ## Extract the common-mode sub-block from a 4-port single-ended S-parameter matrix.
 ##
 ## @var{S} is a 4x4xK complex array.  @var{portorder} is @code{[D+1, D-1, D+2, D-2]}
@@ -30,7 +31,8 @@
 
 function Scc = s2scc (S, portorder)
 
-  narginchk (2, 2);
+  narginchk (1, 2);
+  if nargin < 2;  portorder = [1 2 3 4];  end
   S_mm = _mm (S, portorder);
   Scc = S_mm(3:4, 3:4, :);
 
@@ -52,6 +54,12 @@ endfunction
 %! Scc      = s2scc(S, portorder);
 %! S_mm     = s2smm(S, portorder);
 %! assert (Scc, S_mm(3:4,3:4,:), 1e-14);
+
+%!test
+%! %% MATLAB compat: default portorder (no 2nd arg) — same as [1 2 3 4]
+%! K = 3;
+%! S = rand(4,4,K)*0.1;  S = (S+permute(S,[2 1 3]))/2;
+%! assert (s2scc(S), s2scc(S, [1 2 3 4]), 1e-15);
 
 function S_mm = _mm (S, portorder)
   if size(S,1) ~= 4 || size(S,2) ~= 4
