@@ -41,5 +41,9 @@ Port Operations
   snp2smp
   renormsparams
 
-Octave Compatibility Utilities
+Touchstone I/O
+  fromtouchn
+
+MATLAB Compatibility Shims
   ifft_symmetric
+  round

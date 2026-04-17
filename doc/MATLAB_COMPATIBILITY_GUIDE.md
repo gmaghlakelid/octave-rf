@@ -36,6 +36,8 @@ MATLAB RF Toolbox syntax.
 | `s2sdd` | yes | yes | compatible | portorder optional (default [1 2 3 4]) |
 | `s2scc` | yes | yes | compatible | portorder optional (default [1 2 3 4]) |
 | `sparameters` | yes (class) | yes (struct) | compatible | See "sparameters" section below |
+| `fromtouchn` | no (built-in to sparameters) | yes | octave-rf extra | Touchstone reader (also used by `sparameters(filename)`) |
+| `round(x, n)` | built-in | yes (shim) | identical | Octave's built-in `round` does not accept 2nd arg; this shim adds it |
 | `rfparam` | yes | yes | identical | |
 | `ifft_symmetric` | built-in `ifft(x,'symmetric')` | yes | octave-rf shim | Use `ifft_symmetric(x)` for portable code |
 
@@ -156,11 +158,11 @@ argument and produce identical results in both environments.
 | `sparameters(P, f)` | yes | yes |
 | `sparameters(P, f, z0)` | yes (stores at z0) | yes (renorms to 50) |
 | `sparameters(obj, z0_new)` | yes (renorm) | yes (renorm) |
-| `sparameters(filename)` | yes | **no** |
+| `sparameters(filename)` | yes | yes | Uses bundled `fromtouchn` reader |
 
-**Touchstone file I/O**: MATLAB's `sparameters('file.s2p')` reads Touchstone
-files directly.  octave-rf does not have this form.  Use the bundled
-`fromtouchn.m` reader (in `examples/`) or any other Touchstone parser:
+**Touchstone file I/O**: `sparameters('file.s2p')` now works in both MATLAB
+and octave-rf.  In octave-rf it calls the bundled `fromtouchn` Touchstone
+reader internally.  You can also call `fromtouchn` directly:
 ```octave
 [freq, S, z0] = fromtouchn('myfile.s2p');
 s = sparameters(S, freq);
@@ -180,6 +182,7 @@ equivalent helpers.
 | `renormsparams(S, z_new, z_old)` | Renormalize S-parameters | `sparameters(sparameters(S,f,z_old), z_new)` |
 | `embedsparams(dut, fix1, fix2)` | Embed DUT inside fixtures | `cascadesparams(fix1, cascadesparams(dut, fix2))` |
 | `ifft_symmetric(x)` | `real(ifft(x))` | `ifft(x, 'symmetric')` |
+| `round(x, n)` | Built-in shim: `round(x*10^n)/10^n` | Built-in (MATLAB supports 2-arg `round` natively) |
 
 ---
 
@@ -188,16 +191,9 @@ equivalent helpers.
 ### Recommended pattern for Touchstone loading
 
 ```matlab
-if exist('OCTAVE_VERSION', 'builtin')
-    %% Octave path
-    [freq, S, z0] = fromtouchn('myfile.s2p');
-    s = sparameters(S, freq);
-else
-    %% MATLAB path
-    s = sparameters('myfile.s2p');
-end
+%% Works identically in both MATLAB and Octave (with pkg rf loaded):
+s = sparameters('myfile.s2p');
 
-%% From here on, code is identical in both:
 T   = s2t(s.Parameters);
 Z   = s2z(s.Parameters, 50);
 S21 = rfparam(s, 2, 1);
@@ -217,8 +213,8 @@ s2sdd, s2scc, s2smm (with no portorder and [Sdd,Sdc,Scd,Scc] outputs)
 
 ```matlab
 snp2smp     — use 4-arg form: snp2smp(S, 50, order, 50)
-smm2s       — MATLAB takes 4 args, octave-rf takes 5 (extra portorder)
-sparameters — file-reading form not available in octave-rf
+smm2s       — MATLAB takes 4 args; octave-rf accepts both 4 and 5
+              (5th arg = portorder, defaults to [1 2 3 4] if omitted)
 ```
 
 ---

@@ -1,39 +1,63 @@
 ## -*- texinfo -*-
-## @deftypefn  {Function File} {@var{s} =} sparameters (@var{params}, @var{freq})
+## @deftypefn  {Function File} {@var{s} =} sparameters (@var{filename})
+## @deftypefnx {Function File} {@var{s} =} sparameters (@var{params}, @var{freq})
 ## @deftypefnx {Function File} {@var{s} =} sparameters (@var{params}, @var{freq}, @var{z0})
 ## @deftypefnx {Function File} {@var{s} =} sparameters (@var{s_obj}, @var{z0_new})
-## Create an S-parameter object (struct) or renormalize an existing one.
+## Create an S-parameter object (struct) from a Touchstone file, from raw
+## arrays, or renormalize an existing one.
 ##
-## @strong{Form 1}: @code{sparameters(params, freq)} creates an S-parameter object
-## from a raw @var{N}x@var{N}x@var{K} parameter array and a @var{K}x1 frequency vector.
-## The reference impedance defaults to 50 ohms.
+## @strong{Form 1} (MATLAB compatible): @code{sparameters(filename)} reads a
+## Touchstone file (.s1p, .s2p, .s4p, etc.) and returns the S-parameter
+## struct.  Uses the bundled @code{fromtouchn} reader.  Reference impedance
+## is read from the Touchstone header (defaults to 50 ohms).
 ##
-## @strong{Form 2}: @code{sparameters(params, freq, z0)} creates an S-parameter object
-## with reference impedance @var{z0} (scalar, in ohms).  If @var{z0} != 50, the
-## S-parameters are renormalized to a 50-ohm reference before storing.
+## @strong{Form 2}: @code{sparameters(params, freq)} creates an S-parameter
+## object from a raw @var{N}x@var{N}x@var{K} parameter array and a @var{K}x1
+## frequency vector.  Reference impedance defaults to 50 ohms.
 ##
-## @strong{Form 3}: @code{sparameters(s_obj, z0_new)} renormalizes an existing
-## S-parameter object to new reference impedance @var{z0_new}.
+## @strong{Form 3}: @code{sparameters(params, freq, z0)} creates an object
+## with reference impedance @var{z0} (scalar, in ohms).  If @var{z0} != 50,
+## the S-parameters are renormalized to a 50-ohm reference before storing.
 ##
-## The returned struct has two fields:
+## @strong{Form 4}: @code{sparameters(s_obj, z0_new)} renormalizes an
+## existing S-parameter object to new reference impedance @var{z0_new}.
+##
+## The returned struct has four fields (matching MATLAB RF Toolbox):
 ## @itemize
-## @item @code{Parameters} --- @var{N}x@var{N}x@var{K} complex array of S-parameters
-## @item @code{Frequencies} --- @var{K}x1 column vector of frequencies in Hz
+## @item @code{Parameters} --- @var{N}x@var{N}x@var{K} complex array
+## @item @code{Frequencies} --- @var{K}x1 column vector (Hz)
+## @item @code{Impedance} --- reference impedance (scalar, ohms)
+## @item @code{NumPorts} --- number of ports (integer)
 ## @end itemize
-##
-## Provides a struct with the same two primary fields as MATLAB RF Toolbox's
-## @code{sparameters} class (@code{.Parameters}, @code{.Frequencies}), so the
-## IEEE P370 de-embedding workflow runs identically on either side.  This
-## function does not parse Touchstone files (use a dedicated reader).
 ##
 ## @seealso{rfparam, cascadesparams, deembedsparams, embedsparams}
 ## @end deftypefn
 
 function s = sparameters (varargin)
 
-  narginchk (2, 3);
+  narginchk (1, 3);
 
-  if nargin == 2 && isstruct (varargin{1})
+  if nargin == 1 && ischar (varargin{1})
+    %% Form 1: sparameters(filename) — read Touchstone file (MATLAB compatible)
+    filename = varargin{1};
+    if ~exist (filename, 'file')
+      error ('sparameters: file not found: %s', filename);
+    end
+    ws = warning ('off', 'all');   %% fromtouchn uses legacy syntax
+    unwind_protect
+      [freq, params, ~] = fromtouchn (filename);
+    unwind_protect_cleanup
+      warning (ws);
+    end_unwind_protect
+    if ndims (params) == 2
+      params = reshape (params, size(params,1), size(params,2), 1);
+    end
+    s.Parameters  = params;
+    s.Frequencies = freq(:);
+    s.Impedance   = 50.0;
+    s.NumPorts    = size (params, 1);
+
+  elseif nargin == 2 && isstruct (varargin{1})
     %% Form 3: sparameters(s_obj, z0_new) — renormalize
     s_in   = varargin{1};
     z0_new = varargin{2};
@@ -186,3 +210,21 @@ endfunction
 %! p = 0.1*eye(4);
 %! s = sparameters(p, f);
 %! assert (s.NumPorts, 4);
+
+%!test
+%! %% MATLAB compat: sparameters(filename) reads a Touchstone file
+%! this_dir = fileparts (mfilename ('fullpath'));
+%! s2p_file = fullfile (this_dir, '..', 'examples', 'case_01_2xThru.s2p');
+%! if exist (s2p_file, 'file')
+%!   s = sparameters (s2p_file);
+%!   assert (isstruct (s));
+%!   assert (isfield (s, 'Parameters'));
+%!   assert (isfield (s, 'Frequencies'));
+%!   assert (isfield (s, 'Impedance'));
+%!   assert (isfield (s, 'NumPorts'));
+%!   assert (s.NumPorts, 2);
+%!   assert (s.Impedance, 50);
+%!   assert (size (s.Parameters, 1), 2);
+%!   assert (size (s.Parameters, 2), 2);
+%!   assert (numel (s.Frequencies) > 0);
+%! end

@@ -41,7 +41,8 @@
 
 function S = smm2s (Sdd, Sdc, Scd, Scc, portorder)
 
-  narginchk (5, 5);
+  narginchk (4, 5);
+  if nargin < 5;  portorder = [1 2 3 4];  end
 
   K = size(Sdd, 3);
   if size(Sdc,3) ~= K || size(Scd,3) ~= K || size(Scc,3) ~= K
@@ -102,3 +103,12 @@ endfunction
 %! %% Verify: s2sdd of the result equals Sdd
 %! assert (s2sdd(S_balanced, portorder), Sdd, 1e-13);
 %! assert (s2scc(S_balanced, portorder), Scc, 1e-13);
+
+%!test
+%! %% MATLAB compat: default portorder (no 5th arg) — same as [1 2 3 4]
+%! K = 3;
+%! S = rand(4,4,K)*0.1;  S = (S+permute(S,[2 1 3]))/2;
+%! [Sdd, Sdc, Scd, Scc] = s2smm(S);
+%! S_with_po = smm2s(Sdd, Sdc, Scd, Scc, [1 2 3 4]);
+%! S_default = smm2s(Sdd, Sdc, Scd, Scc);
+%! assert (S_default, S_with_po, 1e-15);
