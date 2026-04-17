@@ -7,28 +7,23 @@
 ##
 ## @strong{Conversion formulas:}
 ## @verbatim
-##   S11 =  T12 / T22
-##   S12 =  (T11*T22 - T12*T21) / T22   =  det(T) / T22
-##   S21 =  1   / T22
-##   S22 = -T21 / T22
+##   S11 =  T21 / T11
+##   S12 =  (T11*T22 - T12*T21) / T11   =  det(T) / T11
+##   S21 =  1   / T11
+##   S22 = -T12 / T11
 ## @end verbatim
 ##
 ## @strong{Mathematical basis:}
 ## @verbatim
 ##   Pupalaikis, P.J., "S-Parameters for Signal Integrity",
-##     Cambridge University Press, 2020.  [PRIMARY]
-##     Section 3.6 "T-Parameters", Eq. 3.21 (p.65): T-parameter definition.
-##     Section 3.6.2, Eq. 3.33-3.34 (p.68): S in terms of T — matches
-##     this implementation element-by-element:
-##       S = (1/T22) * [ T12   det(T) ;  1   -T21 ].
+##     Cambridge University Press, 2020.
+##     Section 3.6 "T-Parameters", Eq. 3.21 (p.65).
+##     Uses the element ordering compatible with MATLAB RF Toolbox
+##     (see s2t.m for the convention note).
 ##
 ##   Hall, S.H. and Heck, H.L., "Advanced Signal Integrity for High-Speed
 ##     Digital Designs", Wiley-IEEE Press, 2009.
 ##     Section 9.2.4 "Cascading S-Parameters" (p.390).
-##
-##   NOTE: Pozar's "Microwave Engineering" 4th ed. does NOT cover chain
-##   scattering T-parameters.  Pozar §4.4 Eq. 4.54-4.55 describe reference
-##   plane shifts, a different concept.  No Pozar citation here.
 ## @end verbatim
 ##
 ## @seealso{s2t, cascadesparams, deembedsparams}
@@ -46,14 +41,14 @@ function S = t2s (T)
   S = zeros (2, 2, K);
 
   for k = 1:K
-    t22 = T(2,2,k);
-    if t22 == 0
-      error ('t2s: T22 is zero at frequency index %d — S-parameters are undefined', k);
+    t11 = T(1,1,k);
+    if t11 == 0
+      error ('t2s: T11 is zero at frequency index %d — S-parameters are undefined', k);
     end
-    S(1,1,k) =  T(1,2,k) / t22;
-    S(1,2,k) = (T(1,1,k)*T(2,2,k) - T(1,2,k)*T(2,1,k)) / t22;
-    S(2,1,k) =  1.0        / t22;
-    S(2,2,k) = -T(2,1,k)  / t22;
+    S(1,1,k) =  T(2,1,k) / t11;
+    S(1,2,k) = (T(1,1,k)*T(2,2,k) - T(1,2,k)*T(2,1,k)) / t11;
+    S(2,1,k) =  1.0       / t11;
+    S(2,2,k) = -T(1,2,k) / t11;
   endfor
 
 endfunction
@@ -75,14 +70,14 @@ endfunction
 %! end
 
 %!test
-%! %% S21 = 1/T22 identity
+%! %% S21 = 1/T11 identity
 %! T = zeros(2,2,1);
-%! T(1,1,1) = 0.5;  T(1,2,1) = 0.3;
-%! T(2,1,1) = -0.3; T(2,2,1) = 1.5;
+%! T(1,1,1) = 1.5;  T(1,2,1) = -0.3;
+%! T(2,1,1) = 0.3;  T(2,2,1) = 0.5;
 %! S = t2s(T);
-%! assert (S(2,1,1), 1/T(2,2,1), 1e-15);
-%! assert (S(1,1,1), T(1,2,1)/T(2,2,1), 1e-15);
-%! assert (S(2,2,1), -T(2,1,1)/T(2,2,1), 1e-15);
+%! assert (S(2,1,1), 1/T(1,1,1), 1e-15);
+%! assert (S(1,1,1), T(2,1,1)/T(1,1,1), 1e-15);
+%! assert (S(2,2,1), -T(1,2,1)/T(1,1,1), 1e-15);
 
 %!test
 %! %% det(T) = S12 * T22 identity
